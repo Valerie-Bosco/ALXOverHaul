@@ -1,7 +1,9 @@
-[submodule "AlxOverHaul/modules/ALXModuleManager"]
-	path = AlxOverHaul/modules/ALXModuleManager
+[submodule "ALXOverHaul/modules/ALXModuleManager"]
+	path = ALXOverHaul/modules/ALXModuleManager
 	url = https://github.com/Valerie-Bosco/ALXModuleManager.git
-[submodule "AlxOverHaul/modules/ALXAddonUpdater"]
-	path = AlxOverHaul/modules/ALXAddonUpdater
+[submodule "ALXOverHaul/modules/ALXAddonUpdater"]
+	path = ALXOverHaul/modules/ALXAddonUpdater
 	url = https://github.com/Valerie-Bosco/ALXAddonUpdater.git
-
+[submodule "ALXOverHaul/modules/ALXCompatibilityLayer"]
+	path = ALXOverHaul/modules/ALXCompatibilityLayer
+	url = https://github.com/Valerie-Bosco/ALXCompatibilityLayer.git
