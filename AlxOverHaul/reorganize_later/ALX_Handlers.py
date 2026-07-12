@@ -1,7 +1,7 @@
 import bpy
 
+from ..ALX_keymaps import AlxCreateKeymaps
 from ..info_system import ALX_Info_System
-from .AlxKeymapUtils import AlxCreateKeymaps
 
 
 @bpy.app.handlers.persistent
@@ -18,11 +18,16 @@ def ALX_MainSavePost(scene):
 
 def load_post_lambda(context: bpy.types.Context):
     if (hasattr(context, "preferences")) and (context.preferences is not None):
-        if (hasattr(context.preferences, "themes")) and (context.preferences.themes is not None):
+        if (hasattr(context.preferences, "themes")) and (
+                context.preferences.themes is not None
+        ):
             theme = context.preferences.themes.get("Default")
 
-            if (theme is not None):
-                theme.user_interface.wcol_box.inner = [*theme.user_interface.wcol_box.inner[0:3], 1]
+            if theme is not None:
+                theme.user_interface.wcol_box.inner = [
+                    *theme.user_interface.wcol_box.inner[0:3],
+                    1,
+                ]
 
                 theme.view_3d.face_front = (0, 0, 1, 0.5)
                 theme.view_3d.face_back = (1, 0, 0, 0.5)
@@ -33,9 +38,17 @@ def load_post_lambda(context: bpy.types.Context):
 def save_post_lambda(context: bpy.types.Context):
     ALX_Info_System.INFO_Generator(context)
 
-    properties_area = [area for area in context.screen.areas if (area is not None) and (area.type == "PROPERTIES")]
+    properties_area = [
+        area
+        for area in context.screen.areas
+        if (area is not None) and (area.type == "PROPERTIES")
+    ]
 
-    if (properties_area is not None) and (type(properties_area) == list) and (len(properties_area) > 0):
+    if (
+            (properties_area is not None)
+            and (type(properties_area) == list)
+            and (len(properties_area) > 0)
+    ):
         properties_area[0].tag_redraw()
 
 
@@ -65,8 +78,12 @@ def addon_keymaps_lambda():
 
 
 def AlxUpdateSceneSelectionObjectListLambda():
-    SelectedObjects = [object for scene in bpy.data.scenes for object in scene.objects if (
-        object.select_get() == True)]
+    SelectedObjects = [
+        object
+        for scene in bpy.data.scenes
+        for object in scene.objects
+        if (object.select_get() == True)
+    ]
 
     for scene in bpy.data.scenes:
         scene.alx_object_selection_properties.clear()
@@ -78,7 +95,15 @@ def AlxUpdateSceneSelectionObjectListLambda():
             Item.name = Object.name
 
             Item.ObjectPointer = Object
-            if (Object.type in ["MESH", "FONT", "LATTICE", "CURVE", "SURFACE", "GPENCIL", "VOLUME"]):
+            if Object.type in [
+                "MESH",
+                "FONT",
+                "LATTICE",
+                "CURVE",
+                "SURFACE",
+                "GPENCIL",
+                "VOLUME",
+            ]:
                 Item = scene.alx_object_selection_modifier.add()
                 Item.name = Object.name
                 Item.ObjectPointer = Object

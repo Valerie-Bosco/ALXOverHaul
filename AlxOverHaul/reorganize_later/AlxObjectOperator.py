@@ -2,9 +2,6 @@ import bmesh
 import bpy
 import mathutils
 
-from ..utilities.ALX_BMesh_Utils import GET_selected_verts
-from ..utilities.ALX_Math_Utils import AVERAGE_NormalFromVectorList
-
 
 class ALX_OT_Object_UnlockedQOrigin(bpy.types.Operator):
     """"""
@@ -14,19 +11,24 @@ class ALX_OT_Object_UnlockedQOrigin(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     origin_set_mode: bpy.props.EnumProperty(
-        name="", default="CURSOR_TO_WORLD",
+        name="",
+        default="CURSOR_TO_WORLD",
         items={
             ("CURSOR_TO_WORLD", "cursor to world", "", 1),
-            ("ORIGIN_TO_SELECTION", "origin to selection", "", 1 << 1)
-        }
-    )  # type:ignore
+            ("ORIGIN_TO_SELECTION", "origin to selection", "", 1 << 1),
+        },
+    )  # type: ignore
 
     ContextMesh: bpy.types.Mesh = None
     ContextBMesh: bmesh.types.BMesh = None
 
     @classmethod
     def poll(self, context: bpy.types.Context):
-        return (context.area.type == "VIEW_3D") and (context.object is not None)
+        return (
+                context.area is not None
+                and context.area.type == "VIEW_3D"
+                and context.object is not None
+        )
 
     def execute(self, context):
 
@@ -38,16 +40,16 @@ class ALX_OT_Object_UnlockedQOrigin(bpy.types.Operator):
         # correction_matrix = mathutils.Matrix().to_3x3()
         # correction_matrix.rotate(angle)
 
-        # _mode = context.mode if (context.mode[0:4] != "EDIT") else "EDIT" if (context.mode[0:4] == "EDIT") else "OBJECT"
+        # mode = context.mode if (context.mode[0:4] != "EDIT") else "EDIT" if (context.mode[0:4] == "EDIT") else "OBJECT"
         # bpy.ops.object.mode_set(mode="OBJECT")
         # object_mesh.transform(correction_matrix.to_4x4())
-        # bpy.ops.object.mode_set(mode=_mode)
+        # bpy.ops.object.mode_set(mode=mode)
 
         # if (self.origin_set_mode == "CURSOR_TO_WORLD"):
         #     context.scene.cursor.location = (0.0, 0.0, 0.0)
         #     return {"FINISHED"}
 
-        if (self.origin_set_mode == "ORIGIN_TO_SELECTION"):
+        if self.origin_set_mode == "ORIGIN_TO_SELECTION":
             if (context.mode == "EDIT_MESH") and (context.edit_object.type == "MESH"):
                 self.ContextMesh = context.edit_object.data
                 if (self.ContextBMesh is None) or (not self.ContextBMesh.is_valid):
@@ -57,20 +59,38 @@ class ALX_OT_Object_UnlockedQOrigin(bpy.types.Operator):
                 self.ContextBMesh.edges.ensure_lookup_table()
                 self.ContextBMesh.faces.ensure_lookup_table()
 
-            if (self.ContextBMesh is not None):
+            if self.ContextBMesh is not None:
                 object_mesh: bpy.types.Mesh = context.object.data
                 object_Wmatrix: mathutils.Matrix = context.object.matrix_world
 
-                selection = [vert.index for vert in self.ContextBMesh.verts if (vert.select == True)]
+                selection = [
+                    vert.index
+                    for vert in self.ContextBMesh.verts
+                    if (vert.select == True)
+                ]
 
-                selection_vertex_Wco_list = [self.ContextBMesh.verts[vertex_index].co for vertex_index in selection]
-                selection_vertex_normal_list = [self.ContextBMesh.verts[vertex_index].normal for vertex_index in selection]
+                selection_vertex_Wco_list = [
+                    self.ContextBMesh.verts[vertex_index].co
+                    for vertex_index in selection
+                ]
+                selection_vertex_normal_list = [
+                    self.ContextBMesh.verts[vertex_index].normal
+                    for vertex_index in selection
+                ]
 
-                selection_average_Wco: mathutils.Vector = sum(selection_vertex_Wco_list, mathutils.Vector()) / len(selection_vertex_Wco_list)
+                selection_average_Wco: mathutils.Vector = sum(
+                    selection_vertex_Wco_list, mathutils.Vector()
+                ) / len(selection_vertex_Wco_list)
 
-                WM_vertex_corrective_value = mathutils.Matrix.Translation(-selection_average_Wco)
+                WM_vertex_corrective_value = mathutils.Matrix.Translation(
+                    -selection_average_Wco
+                )
 
-                _mode = context.mode if (context.mode[0:4] != "EDIT") else "EDIT" if (context.mode[0:4] == "EDIT") else "OBJECT"
+                _mode = (
+                    context.mode
+                    if (context.mode[0:4] != "EDIT")
+                    else "EDIT" if (context.mode[0:4] == "EDIT") else "OBJECT"
+                )
                 bpy.ops.object.mode_set(mode="OBJECT")
                 object_mesh.transform(WM_vertex_corrective_value)
                 bpy.ops.object.mode_set(mode=_mode)
@@ -96,13 +116,15 @@ class Alx_OT_Object_BatchMaterial(bpy.types.Operator):
 
         material: bpy.types.Material
 
-        if (len(context.selectable_objects) != 0):
+        if len(context.selectable_objects) != 0:
             for i, material in enumerate(bpy.data.materials, start=1):
                 unique_modifier_type_set.add((material.name, material.name, "", 1 << i))
 
         return unique_modifier_type_set
 
-    user_material: bpy.props.EnumProperty(name="material", items=auto_retrieve_file_materials)  # type:ignore
+    user_material: bpy.props.EnumProperty(
+        name="material", items=auto_retrieve_file_materials
+    )  # type: ignore
 
     @classmethod
     def poll(self, context: bpy.types.Context):
@@ -110,18 +132,18 @@ class Alx_OT_Object_BatchMaterial(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context):
         for object in context.selected_objects:
-            if (object.type == "MESH"):
-                if (len(object.material_slots) > 0):
+            if object.type == "MESH":
+                if len(object.material_slots) > 0:
                     slot: bpy.types.MaterialSlot = object.material_slots[0]
                 else:
                     bpy.context.view_layer.objects.active = object
                     bpy.ops.object.material_slot_add()
 
-                if (self.user_material == "NONE"):
+                if self.user_material == "NONE":
                     slot.material = None
                 else:
                     material = bpy.data.materials.get(self.user_material)
-                    if (material is not None):
+                    if material is not None:
                         slot.material = material
 
         return {"FINISHED"}
