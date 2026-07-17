@@ -5,7 +5,10 @@ from .info_system import ALX_Info_System
 from .interface import ALX_Alexandria_General_Panel, ALX_Shapeky_Toolset
 from .interface.ALX_Alexandria_Layouts import UIPreset_ObjectTabUIWrapper
 from .modules.ALXAddonUpdater.ALXAddonUpdater.ALX_AddonUpdater import Alx_Addon_Updater
-from .modules.ALXModuleManager.ALXModuleManager.module_manager import ALXModuleManager
+from .modules.ALXModuleManager.ALXModuleManager.module_manager import (
+    ALXModuleManager,
+    SET_module_manager,
+)
 from .reorganize_later import ALX_Handlers, AlxProperties
 from .weight_paint_tools import Alx_weightpaint_bucket_fill
 
@@ -22,9 +25,8 @@ bl_info = {
     "tracker_url": "https://github.com/Valerie-Bosco/AlxOverHaul/issues",
 }
 
-module_manager = ALXModuleManager(
-    path=__path__, bl_info=bl_info, init_globals=globals(), mute=False
-)
+ALX_module_manager = ALXModuleManager(path=__path__, bl_info=bl_info, mute=False)
+SET_module_manager(ALX_module_manager)
 
 addon_updater = Alx_Addon_Updater(
     path=__path__,
@@ -143,7 +145,7 @@ def UnRegisterHandlers():
 
 
 def register():
-    module_manager.register_modules()
+    ALX_module_manager.register_modules()
     addon_updater.register_addon_updater(mute=True)
 
     bpy.types.OBJECT_PT_context_object.prepend(UIPreset_ObjectTabUIWrapper)
@@ -158,7 +160,7 @@ def register():
 
 
 def unregister():
-    module_manager.unregister_modules()
+    ALX_module_manager.unregister_modules()
     addon_updater.unregister_addon_updater()
 
     bpy.types.OBJECT_PT_context_object.remove(UIPreset_ObjectTabUIWrapper)
@@ -166,7 +168,3 @@ def unregister():
 
     UnRegisterProperties()
     UnRegisterHandlers()
-
-
-if __name__ == "__main__":
-    register()

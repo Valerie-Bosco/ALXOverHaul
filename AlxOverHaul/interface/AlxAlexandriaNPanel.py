@@ -5,6 +5,8 @@ from ..UVTools import AlxUDIMTools
 from ..armature_tools import Alx_rigging_tools
 from ..pose_tools import Alx_pose_tools
 
+from ..mode.editmode.smart_vert import ALX_OT_Mesh_SmartVertex
+
 
 class ALX_PT_UI_Addon_ToolShelf(bpy.types.Panel):
     """"""
@@ -20,6 +22,8 @@ class ALX_PT_UI_Addon_ToolShelf(bpy.types.Panel):
 
     def draw(self, context: bpy.types.Context):
         mainlayout = self.layout
+
+        mainlayout.operator(ALX_OT_Mesh_SmartVertex.bl_idname, text="Smart Vertex")
 
         mesh_tools_panel: bpy.types.UILayout
         mesh_tools_header, mesh_tools_panel = mainlayout.panel(

@@ -1,10 +1,12 @@
+from math import cos, pi, sin
+
 import blf
 import bpy
 import gpu
 from gpu_extras.batch import batch_for_shader
 from mathutils import Matrix, Quaternion, Vector
 
-from ALXOverHaul.mode.editmode.utils.math import cos, pi, sin
+from .mc_math import get_world_space_normal
 from .registration import get_addon, get_prefs
 from .tools import get_active_tool
 from .ui import get_zoom_factor, require_header_offset

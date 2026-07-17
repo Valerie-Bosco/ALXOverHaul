@@ -93,9 +93,9 @@ class Alx_UL_UIList_ObjectSelectionProperties(bpy.types.UIList):
 class Alx_PG_PropertyGroup_ModifierSettings(bpy.types.PropertyGroup):
     """"""
 
-    object_name: bpy.props.StringProperty(name="", default="")  # type:ignore
-    object_modifier: bpy.props.StringProperty(name="", default="")  # type:ignore
-    show_options: bpy.props.BoolProperty(name="", default=False)  # type:ignore
+    object_name: bpy.props.StringProperty(name="", default="")  # type: ignore
+    object_modifier: bpy.props.StringProperty(name="", default="")  # type: ignore
+    show_options: bpy.props.BoolProperty(name="", default=False)  # type: ignore
 
 
 class Alx_PT_Panel_AlexandriaGeneralPanel(bpy.types.Panel):

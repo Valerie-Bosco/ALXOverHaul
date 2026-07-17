@@ -12,9 +12,9 @@ from .utils.modifier import add_bevel
 from .utils.ui import popup_message
 
 
-class SmartEdge(bpy.types.Operator):
-    bl_idname = "alx.smart_edge"
-    bl_label = ""
+class ALX_OT_Mesh_SmartEdge(bpy.types.Operator):
+    bl_label = "ALX Mesh - Smart Edge"
+    bl_idname = "alx.operator_mesh_smart_edge"
     bl_options = {"REGISTER", "UNDO"}
 
     sharp: BoolProperty(name="Toggle Sharp", default=False)
@@ -23,7 +23,7 @@ class SmartEdge(bpy.types.Operator):
     )
     bevel_weight: FloatProperty(name="Weight", default=1, min=0.01, max=1)
     bevel_amount: FloatProperty(
-        name="Amount", default=0.1, min=0, step=0.3, precision=4
+        name="Amount", default=0.1, min=0, step=1, precision=4
     )
     bevel_clamp: BoolProperty(name="Clamp Overlap", default=False)
     bevel_loop: BoolProperty(name="Loop Slide", default=False)
@@ -87,11 +87,7 @@ class SmartEdge(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        mode = tuple(context.scene.tool_settings.mesh_select_mode)
-        return any(
-            mode == m
-            for m in [(True, False, False), (False, True, False), (False, False, True)]
-        )
+        return context.mode == "EDIT_MESH"
 
     def invoke(self, context, event):
         self.draw_bridge_props = False

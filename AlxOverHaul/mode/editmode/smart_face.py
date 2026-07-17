@@ -6,9 +6,9 @@ from .utils.registration import get_prefs
 from .utils.view import update_local_view
 
 
-class SmartFace(bpy.types.Operator):
-    bl_idname = "alx.smart_face"
-    bl_label = "MACHIN3: Smart Face"
+class ALX_OT_Mesh_SmartFace(bpy.types.Operator):
+    bl_label = "ALX Mesh - Smart Face"
+    bl_idname = "alx.operator_mesh_smart_face"
     bl_options = {"REGISTER", "UNDO"}
 
     automerge: BoolProperty(name="Merge to closeby Vert", default=True)
@@ -28,17 +28,7 @@ class SmartFace(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.mode == "EDIT_MESH":
-            mode = tuple(context.scene.tool_settings.mesh_select_mode)
-            return any(
-                mode == m
-                for m in [
-                    (True, False, False),
-                    (False, True, False),
-                    (False, False, True),
-                ]
-            )
-        return False
+        return context.mode == "EDIT_MESH"
 
     def execute(self, context):
         active = context.active_object

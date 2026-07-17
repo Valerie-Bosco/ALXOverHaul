@@ -23,7 +23,7 @@ from .items import (
 )
 from .utils.draw import draw_lines, draw_point, draw_tris
 from .utils.graph import get_shortest_path
-from .utils.math import average_locations, get_center_between_verts, get_face_center
+from .utils.mc_math import average_locations, get_center_between_verts, get_face_center
 from .utils.property import step_enum
 from .utils.registration import get_addon
 from .utils.selection import get_edges_vert_sequences, get_selection_islands
@@ -94,11 +94,11 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
 
     snapping = False
     passthrough = False
-    mouse_merge = False
+    b_merge_at_mouse = False
 
     @classmethod
     def poll(cls, context):
-        return True
+        return context.mode == "EDIT_MESH"
 
     def draw(self, context):
         if (layout := self.layout) is not None:
@@ -123,7 +123,9 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
                     r.prop(self, "mergetype", expand=True)
 
                     if self.merge_type == "PATHS":
-                        r.prop(self, "merge_center_paths", text="in Center", toggle=True)
+                        r.prop(
+                            self, "merge_center_paths", text="in Center", toggle=True
+                        )
 
                 if self.mode == "CONNECT" or (
                         self.mode == "MERGE" and self.merge_type == "PATHS"
@@ -517,7 +519,7 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
 
         else:
             self.vert_bevel = False
-            self.mouse_merge = False
+            self.b_merge_at_mouse = False
             ret = False
 
             if self.mode == "MERGE" and self.merge_type in ["LAST", "CENTER"]:
@@ -771,7 +773,7 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
             bmesh.ops.pointmerge(bm, verts=verts, merge_co=merge_co)
 
         bmesh.update_edit_mesh(active.data)
-        self.mouse_merge = True
+        self.b_merge_at_mouse = True
 
     def connect(self, active, bm, path1, path2):
         for verts in zip(path1, path2):

@@ -4,7 +4,7 @@ import bpy
 from bpy_extras.view3d_utils import region_2d_to_origin_3d, region_2d_to_vector_3d
 from mathutils.bvhtree import BVHTree as BVH
 
-from ALXOverHaul.mode.editmode.utils import bmesh
+from . import bmesh
 
 
 def cast_bvh_ray_from_mouse(

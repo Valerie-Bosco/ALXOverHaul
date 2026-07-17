@@ -7,6 +7,7 @@ from . import ALX_keymaps
 from .modules.ALXAddonUpdater.ALXAddonUpdater.ALX_AddonUpdaterUI import (
     update_settings_ui,
 )
+from .modules.ALXModuleManager.ALXModuleManager import module_manager
 
 
 class ALXOverHaul_AddonPreferences(bpy.types.AddonPreferences):
@@ -24,7 +25,18 @@ class ALXOverHaul_AddonPreferences(bpy.types.AddonPreferences):
         ],
     )  # type: ignore
 
-    DEBUG: bpy.props.BoolProperty(default=False)
+    def GET_debug(self):
+        return self.DEBUG
+
+    def SET_transform_debug(self: bpy.types.bpy_struct, new_value: bool, curr_value: bool, is_set: bool) -> bool:
+
+        self: ALXOverHaul_AddonPreferences
+        if (mm := module_manager.GET_module_manager()) is not None:
+            mm.mute = not self.DEBUG
+
+        return new_value
+
+    DEBUG: bpy.props.BoolProperty(default=False, set_transform=SET_transform_debug)
 
     # region ADD-ON UPDATER
     auto_check_update: bpy.props.BoolProperty(
@@ -739,13 +751,13 @@ class ALXOverHaul_AddonPreferences(bpy.types.AddonPreferences):
             update_settings_ui(context, addon_updater_column)
 
 
-def GET_preferences() -> ALXOverHaul_AddonPreferences | None:
+def GET_preferences() -> bpy.types.AddonPreferences | None:
     if bpy.context.preferences is not None:
         addon: bpy.types.Addon | list[bpy.types.Addon] = bpy.context.preferences.addons[
             __package__
         ]
 
+        addon: bpy.types.Addon
         if addon is not None and type(addon) == bpy.types.Addon:
-            # noinspection PyUnresolvedReferences
             return addon.preferences
     return None

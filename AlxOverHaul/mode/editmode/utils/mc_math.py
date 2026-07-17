@@ -1,7 +1,7 @@
+from math import floor, log10
+
 from mathutils import Matrix, Vector
 from mathutils.geometry import intersect_line_plane
-
-from ALXOverHaul.mode.editmode.utils.math import floor, log10
 
 
 def dynamic_format(value, decimal_offset=0):

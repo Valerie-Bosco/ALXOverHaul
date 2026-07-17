@@ -16,8 +16,8 @@ class Alx_OT_Armature_Pose_SetPosePosition(bpy.types.Operator):
     bl_label = ""
     bl_idname = "alx.operator_armature_pose_set_pose_position"
 
-    optional_skeleton_target_name: bpy.props.StringProperty()  # type:ignore
-    b_pose: bpy.props.BoolProperty()  # type:ignore
+    optional_skeleton_target_name: bpy.props.StringProperty()  # type: ignore
+    b_pose: bpy.props.BoolProperty()  # type: ignore
 
     @classmethod
     def poll(self, context: bpy.types.Context):
@@ -45,7 +45,7 @@ class Alx_OT_Armature_Pose_ToggleConstraints(bpy.types.Operator):
 
     bl_options = {"REGISTER", "UNDO"}
 
-    enabled: bpy.props.BoolProperty()  # type:ignore
+    enabled: bpy.props.BoolProperty()  # type: ignore
 
     @classmethod
     def poll(self, context: bpy.types.Context):
@@ -92,7 +92,7 @@ class Alx_OT_Armature_MatchIKByMirroredName(bpy.types.Operator):
         name="Mirror From",
         default=1,
         items=[("LEFT", "Left", "", 1), ("RIGHT", "Right", "", 2)],
-    )  # type:ignore
+    )  # type: ignore
 
     @classmethod
     def poll(self, context):
