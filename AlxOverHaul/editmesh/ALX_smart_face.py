@@ -1,9 +1,27 @@
+import os
+
 import bmesh
 import bpy
 from bpy.props import BoolProperty
 
-from .utils.registration import get_prefs
-from .utils.view import update_local_view
+
+def update_local_view(space_data, states):
+    if space_data.local_view:
+        for obj, local in states:
+            if obj:
+                obj.local_view_set(space_data, local)
+
+
+def get_path():
+    return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
+
+def get_name():
+    return os.path.basename(get_path())
+
+
+def get_prefs():
+    return bpy.context.preferences.addons[get_name()].preferences
 
 
 class ALX_OT_Mesh_SmartFace(bpy.types.Operator):
@@ -13,6 +31,10 @@ class ALX_OT_Mesh_SmartFace(bpy.types.Operator):
 
     automerge: BoolProperty(name="Merge to closeby Vert", default=True)
     use_focus: BoolProperty(name="Focus on new Object", default=False)
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == "EDIT_MESH"
 
     def draw(self, context):
         layout = self.layout
@@ -25,10 +47,6 @@ class ALX_OT_Mesh_SmartFace(bpy.types.Operator):
 
         elif self.mode[2] and get_prefs().activate_focus:
             column.prop(self, "use_focus", text="Use Focus", toggle=True)
-
-    @classmethod
-    def poll(cls, context):
-        return context.mode == "EDIT_MESH"
 
     def execute(self, context):
         active = context.active_object

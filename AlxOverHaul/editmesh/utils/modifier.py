@@ -1,6 +1,6 @@
 import bpy
 
-from ..items import mirror_props
+from items import mirror_props
 
 
 def add_triangulate(obj):

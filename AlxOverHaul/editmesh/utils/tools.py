@@ -1,6 +1,6 @@
 from bl_ui.space_toolsystem_toolbar import VIEW3D_PT_tools_active as view3d_tools
 
-from ..items import tool_name_mapping_dict
+from items import tool_name_mapping_dict
 
 
 def get_tools_from_context(context):

@@ -13,24 +13,23 @@ from mathutils.geometry import (
     intersect_point_line,
 )
 
-from .colors import white
-from .items import (
-    alt,
-    ctrl,
-    smartvert_merge_type_items,
-    smartvert_mode_items,
-    smartvert_path_type_items,
-)
-from .utils.draw import draw_lines, draw_point, draw_tris
 from .utils.graph import get_shortest_path
 from .utils.mc_math import average_locations, get_center_between_verts, get_face_center
 from .utils.property import step_enum
-from .utils.registration import get_addon
 from .utils.selection import get_edges_vert_sequences, get_selection_islands
 from .utils.snap import Snap
-from .utils.ui import finish_status, init_status, popup_message
 
-hypercursor = None
+ctrl = ["LEFT_CTRL", "RIGHT_CTRL"]
+alt = ["LEFT_ALT", "RIGHT_ALT"]
+shift = ["LEFT_SHIFT", "RIGHT_SHIFT"]
+smartvert_merge_type_items = [
+    ("LAST", "Last", ""),
+    ("CENTER", "Center", ""),
+    ("PATHS", "Paths", ""),
+]
+smartvert_mode_items = [("MERGE", "Merge", ""), ("CONNECT", "Connect Paths", "")]
+
+smartvert_path_type_items = [("TOPO", "Topo", ""), ("LENGTH", "Length", "")]
 
 
 def draw_slide_status(op):
@@ -106,80 +105,26 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
             column = layout.column()
 
             if self.slide_override:
-                mode_row = column.split(factor=0.333)
+                mode_row = column.split(factor=0.3)
                 mode_row.label(text="Mode")
                 mode_row.label(text="Slide Extend")
 
             else:
-                row = column.split(factor=0.3)
-                row.label(text="Mode")
-                r = row.row()
-                r.prop(self, "mode", expand=True)
+                column.prop(self, "mode", expand=True)
 
                 if self.mode == "MERGE":
-                    row = column.split(factor=0.3)
-                    row.label(text="Merge")
-                    r = row.row(align=True)
-                    r.prop(self, "mergetype", expand=True)
-
+                    column.prop(self, "mergetype", expand=True)
                     if self.merge_type == "PATHS":
-                        r.prop(
+                        column.prop(
                             self, "merge_center_paths", text="in Center", toggle=True
                         )
 
                 if self.mode == "CONNECT" or (
                         self.mode == "MERGE" and self.merge_type == "PATHS"
                 ):
-                    row = column.split(factor=0.3)
-                    row.label(text="Shortest Path")
-                    r = row.row()
-                    r.prop(self, "pathtype", expand=True)
-
-    def draw_VIEW3D(self):
-
-        if self.coords:
-            draw_lines(self.coords, mx=self.mx, color=(0.5, 1, 0.5), width=2, alpha=0.5)
-
-        if self.is_snapping:
-            if self.snap_element == "EDGE":
-                if self.snap_coords:
-                    draw_lines(self.snap_coords, color=(1, 0, 0), width=3, alpha=0.75)
-
-                if self.snap_proximity_coords:
-                    draw_lines(
-                        self.snap_proximity_coords,
-                        mx=self.mx,
-                        color=(1, 0, 0),
-                        width=1,
-                        alpha=0.3,
-                    )
-
-                if self.snap_ortho_coords:
-                    draw_lines(
-                        self.snap_ortho_coords,
-                        mx=self.mx,
-                        color=(1, 0.7, 0),
-                        width=1,
-                        alpha=0.3,
-                    )
-
-            elif self.snap_element == "FACE":
-                if self.snap_tri_coords:
-                    draw_tris(self.snap_tri_coords, color=(1, 0, 0), alpha=0.1)
-
-                if self.snap_ortho_coords:
-                    draw_lines(
-                        self.snap_ortho_coords,
-                        mx=self.mx,
-                        color=(1, 0.7, 0),
-                        width=1,
-                        alpha=0.3,
-                    )
+                    column.prop(self, "pathtype", expand=True)
 
     def modal(self, context, event):
-        context.area.tag_redraw()
-
-        self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
 
         self.is_snapping = event.ctrl
         self.is_diverging = self.is_snapping and event.alt
@@ -244,10 +189,11 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
                     (v.co - data["co"]).length for v, data in self.verts.items()
                 ) / len(self.verts)
 
-                bmesh.ops.dissolve_degenerate(
-                    self.bm, edges=self.bm.edges, dist=avg_dist / 100
-                )
-                self.bm.normal_update()
+                if (edit_bmesh := self.bm) is not None and edit_bmesh.is_valid:
+                    bmesh.ops.dissolve_degenerate(
+                        edit_bmesh, edges=edit_bmesh.edges, dist=avg_dist / 100
+                    )
+                    self.bm.normal_update()
 
                 if context.mode == "EDIT_MESH":
                     bmesh.update_edit_mesh(self.active.data)
@@ -286,8 +232,6 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
     def finish(self, context):
         bpy.types.SpaceView3D.draw_handler_remove(self.VIEW3D, "WINDOW")
 
-        finish_status(self)
-
         self.S.finish()
 
         if context.mode == "OBJECT":
@@ -297,23 +241,11 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
 
     def invoke(self, context, event):
 
-        if context.mode == "OBJECT":
-            global hypercursor
-
-            if hypercursor is None:
-                hypercursor, _, hc_version, _ = get_addon("HyperCursor")
-
-            elif hypercursor:
-                hc_version = get_addon("HyperCursor")[2]
-
-            else:
-                return {"CANCELLED"}
-
         self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
 
         if self.slide_override:
             if context.mode == "EDIT_MESH" and tuple(
-                    bpy.context.scene.tool_settings.mesh_select_mode
+                    context.scene.tool_settings.mesh_select_mode
             ) == (False, False, True):
                 return {"CANCELLED"}
 
@@ -334,13 +266,11 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
                     history = list(self.bm.select_history)
 
                     if len(selected) == 1:
-                        popup_message("Select more than 1 vertex.")
+
                         return {"CANCELLED"}
 
                     elif not history:
-                        popup_message(
-                            "Select the last vertex without Box or Circle Select."
-                        )
+
                         return {"CANCELLED"}
 
                     else:
@@ -400,18 +330,6 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
 
             else:
                 wm = context.window_manager
-
-                if hc_version >= (0, 9, 15):
-                    context.window.cursor_warp(
-                        int(wm.HC_mouse_pos[0]), int(wm.HC_mouse_pos[1])
-                    )
-                    self.mouse_pos = Vector(wm.HC_mouse_pos_region)
-
-                else:
-                    context.window.cursor_warp(
-                        int(wm.hyper_mousepos[0]), int(wm.hyper_mousepos[1])
-                    )
-                    self.mouse_pos = Vector(wm.hyper_mousepos_region)
 
                 self.bm = bmesh.new()
                 self.bm.from_mesh(self.active.data)
@@ -482,10 +400,6 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
                 if context.mode == "OBJECT":
                     context.active_object.HC.show_geometry_gizmos = True
 
-                popup_message(
-                    "Try to position the view and mouse in a way, that clearly indicates the direction you want to slide towards",
-                    title="Ambigious Direction",
-                )
                 return {"CANCELLED"}
 
             self.init_loc = self.get_slide_vector_intersection(context)
@@ -505,8 +419,6 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
                 self.snap_tri_coords = []
                 self.snap_proximity_coords = []
                 self.snap_ortho_coords = []
-
-                init_status(self, context, func=draw_slide_status(self))
 
                 self.VIEW3D = bpy.types.SpaceView3D.draw_handler_add(
                     self.draw_VIEW3D, (), "WINDOW", "POST_VIEW"
@@ -538,55 +450,6 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
         return {"CANCELLED"}
 
     def execute(self, context):
-        self.smart_vert(context)
-        return {"FINISHED"}
-
-    def validate_history(self, active, bm, lazy=False):
-        verts = [v for v in bm.verts if v.select]
-        history = list(bm.select_history)
-
-        if lazy:
-            return history
-
-        if len(verts) == len(history):
-            return history
-        return None
-
-    def get_paths(self, bm, history, topo):
-        pair1 = history[0:2]
-        pair2 = history[2:4]
-        pair2.reverse()
-
-        path1 = get_shortest_path(bm, *pair1, topo=topo, select=True)
-        path2 = get_shortest_path(bm, *pair2, topo=topo, select=True)
-
-        is_any_in_both = any(v in path2 for v in path1)
-
-        if is_any_in_both:
-            path1 = get_shortest_path(bm, *pair1, topo=not topo, select=True)
-            path2 = get_shortest_path(bm, *pair2, topo=not topo, select=True)
-
-            self.pathtype = step_enum(
-                self.pathtype, smartvert_path_type_items, step=1, loop=True
-            )
-
-        return path1, path2
-
-    def get_slide_vector_intersection(self, context):
-        view_origin = region_2d_to_origin_3d(
-            context.region, context.region_data, self.mouse_pos
-        )
-        view_dir = region_2d_to_vector_3d(
-            context.region, context.region_data, self.mouse_pos
-        )
-
-        i = intersect_line_line(
-            view_origin, view_origin + view_dir, self.origin, self.target_avg
-        )
-
-        return i[1]
-
-    def smart_vert(self, context):
         active = context.active_object
         topo = True if self.pathtype == "TOPO" else False
 
@@ -675,6 +538,42 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
                     self.connect(active, bm, path1, path2)
                     return True
 
+        return {"FINISHED"}
+
+    def get_paths(self, bm, history, topo):
+        pair1 = history[0:2]
+        pair2 = history[2:4]
+        pair2.reverse()
+
+        path1 = get_shortest_path(bm, *pair1, topo=topo, select=True)
+        path2 = get_shortest_path(bm, *pair2, topo=topo, select=True)
+
+        is_any_in_both = any(v in path2 for v in path1)
+
+        if is_any_in_both:
+            path1 = get_shortest_path(bm, *pair1, topo=not topo, select=True)
+            path2 = get_shortest_path(bm, *pair2, topo=not topo, select=True)
+
+            self.pathtype = step_enum(
+                self.pathtype, smartvert_path_type_items, step=1, loop=True
+            )
+
+        return path1, path2
+
+    def get_slide_vector_intersection(self, context):
+        view_origin = region_2d_to_origin_3d(
+            context.region, context.region_data, self.mouse_pos
+        )
+        view_dir = region_2d_to_vector_3d(
+            context.region, context.region_data, self.mouse_pos
+        )
+
+        i = intersect_line_line(
+            view_origin, view_origin + view_dir, self.origin, self.target_avg
+        )
+
+        return i[1]
+
     def merge_paths(self, active, bm, path1, path2):
         targetmap = {}
 
@@ -733,9 +632,6 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
                     context.region, context.region_data, self.mouse_pos, mx @ v.co
                 )
                 mouse_3d_local = mx.inverted_safe() @ mouse_3d
-
-                if debug:
-                    draw_point(mouse_3d_local, mx=mx, color=white, modal=False)
 
                 distances.append((v.co, (v.co - mouse_3d_local).length))
 
@@ -940,12 +836,12 @@ class ALX_OT_Mesh_SmartVertex(bpy.types.Operator):
         tri_dir1 = (tri_verts[0].co - tri_verts[1].co).normalized()
         tri_dir2 = (tri_verts[2].co - tri_verts[1].co).normalized()
 
-        plane_no = tri_dir1.cross(tri_dir2)
-        plane_co = tri_verts[1].co
+        for vertex, vertex_dict in self.flatten_dict["other_verts"].items():
 
-        for v, vdict in self.flatten_dict["other_verts"].items():
-
-            i = intersect_line_plane(*vdict["line"], plane_co, plane_no)
-
-            if i:
-                v.co = i
+            if (
+                    intersection_vector := intersect_line_plane(
+                        *vertex_dict["line"], tri_verts[1].co, tri_dir1.cross(tri_dir2)
+                    )
+                                           is not None
+            ):
+                vertex.co = intersection_vector

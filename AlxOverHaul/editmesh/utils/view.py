@@ -24,13 +24,6 @@ def reset_xray(context):
     shading.xray_alpha = 0.5
 
 
-def update_local_view(space_data, states):
-    if space_data.local_view:
-        for obj, local in states:
-            if obj:
-                obj.local_view_set(space_data, local)
-
-
 def reset_viewport(context, disable_toolbar=False):
     for screen in context.workspace.screens:
         for area in screen.areas:

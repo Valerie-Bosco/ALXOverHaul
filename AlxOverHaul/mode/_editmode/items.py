@@ -12,10 +12,6 @@ axis_vector_mappings = {
 
 uv_axis_items = [("U", "U", ""), ("V", "V", "")]
 
-ctrl = ["LEFT_CTRL", "RIGHT_CTRL"]
-alt = ["LEFT_ALT", "RIGHT_ALT"]
-shift = ["LEFT_SHIFT", "RIGHT_SHIFT"]
-
 preferences_tabs = [
     ("GENERAL", "General", ""),
     ("KEYMAPS", "Keymaps", ""),
@@ -26,27 +22,6 @@ matcap_background_type_items = [
     ("THEME", "Theme", ""),
     ("WORLD", "World", ""),
     ("VIEWPORT", "Viewport", ""),
-]
-
-smartvert_mode_items = [("MERGE", "Merge", ""), ("CONNECT", "Connect Paths", "")]
-
-smartvert_merge_type_items = [
-    ("LAST", "Last", ""),
-    ("CENTER", "Center", ""),
-    ("PATHS", "Paths", ""),
-]
-
-smartvert_path_type_items = [("TOPO", "Topo", ""), ("LENGTH", "Length", "")]
-
-smartedge_sharp_mode_items = [
-    ("SHARPEN", "Sharpen", ""),
-    ("CHAMFER", "Chamfer", ""),
-    ("KOREAN", "Korean Bevel", ""),
-]
-
-smartedge_select_mode_items = [
-    ("BOUNDS", "Bounds/Region", ""),
-    ("ADJACENT", "Adjacent", ""),
 ]
 
 focus_method_items = [
@@ -120,12 +95,6 @@ driver_space_items = [
 axis_mapping_dict = {"X": 0, "Y": 1, "Z": 2}
 
 uv_align_axis_mapping_dict = {"U": 0, "V": 1}
-
-bridge_interpolation_items = [
-    ("LINEAR", "Linear", ""),
-    ("PATH", "Path", ""),
-    ("SURFACE", "Surface", ""),
-]
 
 view_axis_items = [
     ("FRONT", "Front", ""),
